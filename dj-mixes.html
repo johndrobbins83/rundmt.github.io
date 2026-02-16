@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Mixes - Music Archive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rust: #A0402B;
+            --clay: #8B3A2B;
+            --sand: #D4B896;
+            --charcoal: #1a1a1a;
+            --deep-black: #0a0a0a;
+            --cream: #E8DCC4;
+            --accent: #D94A33;
+            --dark-red: #5C1F1B;
+            --bright-red: #CC4433;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(180deg, var(--deep-black) 0%, var(--dark-red) 50%, var(--deep-black) 100%);
+            background-attachment: fixed;
+            color: var(--cream);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, var(--dark-red), var(--charcoal));
+            border-bottom: 3px solid var(--bright-red);
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.4);
+        }
+
+        .header-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            opacity: 0.8;
+            filter: contrast(1.1) saturate(1.2);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 1));
+        }
+
+        nav a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: white;
+            text-decoration: none;
+            padding: 1.2rem 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        nav a:last-child {
+            border-right: none;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--bright-red);
+            transition: width 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        nav a:hover {
+            color: white;
+            background: rgba(217, 74, 51, 0.2);
+        }
+
+        nav a:hover::before {
+            width: 100%;
+        }
+
+        nav a.active {
+            background: rgba(217, 74, 51, 0.3);
+            color: var(--sand);
+        }
+
+        nav a.active::before {
+            width: 100%;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Section styling */
+        section {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+            animation-delay: 0.1s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            letter-spacing: 4px;
+            color: white;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--bright-red), var(--accent), transparent);
+        }
+
+        /* Mixes Grid */
+        .mixes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .mix-item {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .mix-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--dark-red), var(--bright-red), var(--rust));
+            border: 3px solid var(--rust);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s ease;
+        }
+
+        .mix-cover::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--bright-red) 25%, transparent 25%, transparent 75%, var(--bright-red) 75%),
+                        linear-gradient(45deg, var(--bright-red) 25%, transparent 25%, transparent 75%, var(--bright-red) 75%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            opacity: 0.15;
+        }
+
+        .mix-cover::after {
+            content: '▶';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            color: rgba(232, 220, 196, 0.3);
+        }
+
+        .mix-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 1;
+        }
+
+        .mix-item:hover .mix-cover {
+            transform: translateY(-10px);
+            border-color: var(--bright-red);
+            box-shadow: 0 12px 35px rgba(217, 74, 51, 0.6);
+        }
+
+        .mix-info {
+            text-align: center;
+        }
+
+        .mix-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: white;
+            margin-bottom: 0.3rem;
+        }
+
+        .mix-date {
+            color: var(--sand);
+            font-style: italic;
+            font-size: 1rem;
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.3);
+        }
+
+        .mix-duration {
+            color: var(--clay);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        /* Modal for mix details */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(92, 31, 27, 0.5));
+            border: 3px solid var(--bright-red);
+            border-radius: 8px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(217, 74, 51, 0.6);
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bright-red), var(--accent));
+            border: 2px solid var(--cream);
+            color: var(--cream);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.6);
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 30px rgba(217, 74, 51, 0.9);
+        }
+
+        .modal-mix-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--dark-red), var(--bright-red));
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            border: 3px solid var(--rust);
+            box-shadow: 0 8px 25px rgba(217, 74, 51, 0.4);
+        }
+
+        .modal-mix-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-mix-cover::before {
+            content: '▶';
+            position: absolute;
+            font-size: 8rem;
+            color: rgba(232, 220, 196, 0.2);
+        }
+
+        .modal-header-info {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 2rem;
+            color: var(--sand);
+            font-size: 1.1rem;
+            font-style: italic;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.4);
+        }
+
+        .modal-description {
+            color: var(--cream);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Internal Audio Player */
+        .audio-player-container {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(10, 10, 10, 0.6);
+            border: 2px solid var(--rust);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(217, 74, 51, 0.3);
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .play-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bright-red), var(--accent));
+            border: 2px solid var(--cream);
+            color: var(--cream);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.6);
+        }
+
+        .progress-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 0.9rem;
+            color: var(--sand);
+            letter-spacing: 1px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(160, 130, 109, 0.3);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--bright-red), var(--accent));
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(217, 74, 51, 0.6);
+        }
+
+        .volume-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .volume-icon {
+            color: var(--sand);
+            font-size: 1.2rem;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            background: rgba(160, 130, 109, 0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-level {
+            height: 100%;
+            background: linear-gradient(to right, var(--bright-red), var(--accent));
+            width: 70%;
+            border-radius: 2px;
+        }
+
+        /* SoundCloud Player */
+        .soundcloud-player {
+            margin-bottom: 1.5rem;
+            border: 2px solid var(--rust);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(217, 74, 51, 0.3);
+        }
+
+        .soundcloud-player iframe {
+            width: 100%;
+            height: 166px;
+            border: none;
+            display: block;
+        }
+
+        .modal-tracklist {
+            margin-top: 0;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(217, 74, 51, 0.3);
+        }
+
+        .modal-tracklist-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            color: var(--sand);
+            margin-bottom: 1rem;
+        }
+
+        .track {
+            display: flex;
+            padding: 0.5rem 0;
+            color: var(--cream);
+            border-bottom: 1px solid rgba(160, 130, 109, 0.1);
+        }
+
+        .track-number {
+            color: var(--clay);
+            margin-right: 1rem;
+            min-width: 30px;
+        }
+
+        .track-name {
+            flex: 1;
+        }
+
+        .track-artist {
+            color: var(--sand);
+            font-style: italic;
+            margin-left: 1rem;
+        }
+
+        .modal-download {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(217, 74, 51, 0.3);
+            text-align: center;
+        }
+
+        .download-link {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: rgba(217, 74, 51, 0.2);
+            border: 2px solid var(--rust);
+            color: var(--cream);
+            text-decoration: none;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .download-link:hover {
+            background: rgba(217, 74, 51, 0.4);
+            border-color: var(--bright-red);
+            color: var(--sand);
+            box-shadow: 0 4px 15px rgba(217, 74, 51, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(to bottom, var(--dark-red), var(--charcoal));
+            border-top: 3px solid var(--bright-red);
+            box-shadow: 0 -4px 20px rgba(217, 74, 51, 0.4);
+            margin-top: 5rem;
+        }
+
+        footer nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            background: linear-gradient(to top, rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 1));
+        }
+
+        .footer-logo {
+            padding: 1.2rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        .footer-logo img {
+            height: 40px;
+            width: auto;
+            filter: brightness(1.2);
+        }
+
+        footer nav a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: white;
+            text-decoration: none;
+            padding: 1.2rem 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        footer nav a:last-child {
+            border-right: none;
+        }
+
+        footer nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--bright-red);
+            transition: width 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        footer nav a:hover {
+            color: var(--sand);
+            background: rgba(217, 74, 51, 0.2);
+        }
+
+        footer nav a:hover::before {
+            width: 100%;
+        }
+
+        .footer-projects {
+            padding: 2rem 2rem 0 2rem;
+            border-top: 1px solid rgba(160, 130, 109, 0.2);
+            text-align: center;
+        }
+
+        .footer-projects-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--sand);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.3);
+        }
+
+        .footer-projects-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-project-link {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: var(--cream);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .footer-project-link:hover {
+            color: var(--sand);
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.6);
+        }
+
+        .footer-info {
+            text-align: center;
+            padding: 2rem;
+            color: var(--sand);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        .footer-info a {
+            color: var(--sand);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-info a:hover {
+            color: var(--bright-red);
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.6);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-image {
+                height: 150px;
+            }
+
+            nav {
+                flex-wrap: wrap;
+            }
+
+            nav a {
+                font-size: 1.2rem;
+                padding: 1rem 1.5rem;
+                flex: 1 1 auto;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .mixes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .modal-content {
+                max-width: 95%;
+                max-height: 95vh;
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .modal-mix-cover {
+                margin-bottom: 1rem;
+            }
+
+            footer nav {
+                flex-direction: column;
+            }
+
+            .footer-logo {
+                margin-bottom: 1rem;
+            }
+
+            .footer-projects-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-project-link {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- TO ADD YOUR HEADER IMAGE:
+             1. Save your image in the same folder as this HTML file (or in an 'images' folder)
+             2. Replace 'header-placeholder.jpg' below with your actual filename
+             3. Example: <img src="header.jpg" alt="Header" class="header-image">
+             4. Or with folder: <img src="images/header.jpg" alt="Header" class="header-image">
+        -->
+        <img src="header-placeholder.jpg" alt="Header" class="header-image">
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="dj-mixes.html" class="active">DJ Mixes</a>
+            <a href="music.html">Music</a>
+            <a href="#photos">Photos</a>
+            <a href="#flyers">Flyers</a>
+            <a href="#press">Press</a>
+            <a href="#blog">Blog</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- DJ Mixes Section -->
+        <section>
+            <h2 class="section-title">DJ Mixes</h2>
+            <div class="mixes-grid" id="mixesGrid">
+                <!-- Mix items -->
+                <div class="mix-item" onclick="openMix(0)">
+                    <div class="mix-cover"></div>
+                    <div class="mix-info">
+                        <div class="mix-title">Warehouse Sessions Vol. 1</div>
+                        <div class="mix-date">December 2024</div>
+                        <div class="mix-duration">2h 15m</div>
+                    </div>
+                </div>
+
+                <div class="mix-item" onclick="openMix(1)">
+                    <div class="mix-cover"></div>
+                    <div class="mix-info">
+                        <div class="mix-title">Late Night Frequencies</div>
+                        <div class="mix-date">November 2024</div>
+                        <div class="mix-duration">1h 45m</div>
+                    </div>
+                </div>
+
+                <div class="mix-item" onclick="openMix(2)">
+                    <div class="mix-cover"></div>
+                    <div class="mix-info">
+                        <div class="mix-title">Underground Rhythms</div>
+                        <div class="mix-date">October 2024</div>
+                        <div class="mix-duration">2h 30m</div>
+                    </div>
+                </div>
+
+                <div class="mix-item" onclick="openMix(3)">
+                    <div class="mix-cover"></div>
+                    <div class="mix-info">
+                        <div class="mix-title">Midnight Drive Mix</div>
+                        <div class="mix-date">September 2024</div>
+                        <div class="mix-duration">1h 30m</div>
+                    </div>
+                </div>
+
+                <div class="mix-item" onclick="openMix(4)">
+                    <div class="mix-cover"></div>
+                    <div class="mix-info">
+                        <div class="mix-title">Summer Sessions</div>
+                        <div class="mix-date">August 2024</div>
+                        <div class="mix-duration">2h 00m</div>
+                    </div>
+                </div>
+
+                <div class="mix-item" onclick="openMix(5)">
+                    <div class="mix-cover"></div>
+                    <div class="mix-info">
+                        <div class="mix-title">Basement Tapes</div>
+                        <div class="mix-date">July 2024</div>
+                        <div class="mix-duration">1h 55m</div>
+                    </div>
+                </div>
+
+                <div class="mix-item" onclick="openMix(6)">
+                    <div class="mix-cover"></div>
+                    <div class="mix-info">
+                        <div class="mix-title">Sunrise Set</div>
+                        <div class="mix-date">June 2024</div>
+                        <div class="mix-duration">2h 10m</div>
+                    </div>
+                </div>
+
+                <div class="mix-item" onclick="openMix(7)">
+                    <div class="mix-cover"></div>
+                    <div class="mix-info">
+                        <div class="mix-title">Deep House Vibes</div>
+                        <div class="mix-date">May 2024</div>
+                        <div class="mix-duration">1h 40m</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Mix Details -->
+    <div id="mixModal" class="modal">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <div class="modal-content">
+            <div class="modal-body">
+                <!-- Album Cover -->
+                <div class="modal-mix-cover" id="modalCover"></div>
+
+                <!-- Internal Audio Player (Option 1) -->
+                <div class="audio-player-container" id="audioPlayerContainer" style="display: none;">
+                    <div class="audio-controls">
+                        <button class="play-button" id="playButton">▶</button>
+                        <div class="progress-area">
+                            <div class="time-info">
+                                <span id="currentTime">00:00</span>
+                                <span id="totalTime">00:00</span>
+                            </div>
+                            <div class="progress-bar-container" id="progressContainer">
+                                <div class="progress-bar" id="progressBar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="volume-controls">
+                        <span class="volume-icon">🔊</span>
+                        <div class="volume-slider" id="volumeSlider">
+                            <div class="volume-level" id="volumeLevel"></div>
+                        </div>
+                    </div>
+                    <audio id="audioElement"></audio>
+                </div>
+
+                <!-- SoundCloud Player (Option 2) -->
+                <div class="soundcloud-player" id="soundcloudPlayer" style="display: none;">
+                    <!-- SoundCloud embed will be inserted here -->
+                </div>
+
+                <!-- Mix Info -->
+                <div class="modal-header-info">
+                    <h3 class="modal-title" id="modalTitle">Mix Title</h3>
+                    <div class="modal-meta">
+                        <span id="modalDate">Date</span>
+                        <span id="modalDuration">Duration</span>
+                    </div>
+                    <p class="modal-description" id="modalDescription">Mix description goes here...</p>
+                </div>
+                
+                <!-- Tracklist -->
+                <div class="modal-tracklist">
+                    <div class="modal-tracklist-title">Tracklist</div>
+                    <div id="modalTracks"></div>
+                </div>
+
+                <!-- Download -->
+                <div class="modal-download">
+                    <a href="#" id="downloadLink" class="download-link" download>Download Mix</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <nav>
+            <div class="footer-logo">
+                <img src="data:image/svg+xml,%3Csvg width='120' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='30' font-family='Bebas Neue, sans-serif' font-size='28' fill='%23E8DCC4' letter-spacing='2'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Logo">
+            </div>
+            <a href="dj-mixes.html">DJ Mixes</a>
+            <a href="music.html">Music</a>
+            <a href="#photos">Photos</a>
+            <a href="#flyers">Flyers</a>
+            <a href="#press">Press</a>
+            <a href="#blog">Blog</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <div class="footer-projects">
+            <div class="footer-projects-title">Other Projects</div>
+            <div class="footer-projects-links">
+                <a href="#" class="footer-project-link" target="_blank">PPLPRSN</a>
+                <a href="#" class="footer-project-link" target="_blank">Sobo</a>
+                <a href="#" class="footer-project-link" target="_blank">Deemster</a>
+            </div>
+        </div>
+        <div class="footer-info">
+            <p>&copy; 2026 Music Archive. All rights reserved. | <a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Sample mix data
+        const mixes = [
+            {
+                title: "Warehouse Sessions Vol. 1",
+                date: "December 2024",
+                duration: "2h 15m",
+                description: "Recorded live at The Warehouse's legendary all-night session. This mix captures the raw energy of the underground scene, featuring deep techno cuts and hypnotic grooves that kept the crowd moving until dawn.",
+                // Option 1: Use internal audio player with direct audio file
+                audioUrl: "path/to/your/mix.mp3", // Replace with actual audio file URL
+                // Option 2: Use SoundCloud embed
+                soundcloudUrl: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/YOUR_TRACK_ID&color=%23cc4433&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false",
+                useInternalPlayer: true, // Set to true for internal player, false for SoundCloud
+                downloadUrl: "path/to/download/mix.mp3",
+                tracks: [
+                    { number: 1, name: "Opening Track", artist: "Artist Name" },
+                    { number: 2, name: "Deep Groove", artist: "Producer Name" },
+                    { number: 3, name: "Midnight Hour", artist: "DJ Name" },
+                    { number: 4, name: "Underground Pulse", artist: "Collective" },
+                    { number: 5, name: "Peak Time", artist: "Various" }
+                ]
+            },
+            // Add more mixes...
+        ];
+
+        let currentAudio = null;
+        let isPlaying = false;
+
+        function openMix(index) {
+            const modal = document.getElementById('mixModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDate = document.getElementById('modalDate');
+            const modalDuration = document.getElementById('modalDuration');
+            const modalDescription = document.getElementById('modalDescription');
+            const modalTracks = document.getElementById('modalTracks');
+            const audioPlayerContainer = document.getElementById('audioPlayerContainer');
+            const soundcloudPlayer = document.getElementById('soundcloudPlayer');
+            const downloadLink = document.getElementById('downloadLink');
+
+            // Use sample data or default
+            const mix = mixes[index] || {
+                title: "DJ Mix",
+                date: "2024",
+                duration: "2h 00m",
+                description: "An incredible journey through underground electronic music. This mix showcases the finest selections from the scene, blending genres and pushing boundaries.",
+                audioUrl: "",
+                soundcloudUrl: "",
+                useInternalPlayer: true,
+                downloadUrl: "#",
+                tracks: [
+                    { number: 1, name: "Track One", artist: "Artist A" },
+                    { number: 2, name: "Track Two", artist: "Artist B" },
+                    { number: 3, name: "Track Three", artist: "Artist C" }
+                ]
+            };
+
+            // Update modal content
+            modalTitle.textContent = mix.title;
+            modalDate.textContent = mix.date;
+            modalDuration.textContent = mix.duration;
+            modalDescription.textContent = mix.description;
+
+            // Show appropriate player
+            if (mix.useInternalPlayer) {
+                audioPlayerContainer.style.display = 'block';
+                soundcloudPlayer.style.display = 'none';
+                setupInternalPlayer(mix.audioUrl);
+            } else {
+                audioPlayerContainer.style.display = 'none';
+                soundcloudPlayer.style.display = 'block';
+                soundcloudPlayer.innerHTML = `<iframe src="${mix.soundcloudUrl}" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"></iframe>`;
+            }
+
+            // Set download link
+            downloadLink.href = mix.downloadUrl;
+
+            // Build tracklist
+            let tracksHTML = '';
+            mix.tracks.forEach(track => {
+                tracksHTML += `
+                    <div class="track">
+                        <span class="track-number">${track.number}.</span>
+                        <span class="track-name">${track.name}</span>
+                        <span class="track-artist">${track.artist}</span>
+                    </div>
+                `;
+            });
+            modalTracks.innerHTML = tracksHTML;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function setupInternalPlayer(audioUrl) {
+            const audioElement = document.getElementById('audioElement');
+            const playButton = document.getElementById('playButton');
+            const progressBar = document.getElementById('progressBar');
+            const progressContainer = document.getElementById('progressContainer');
+            const currentTimeEl = document.getElementById('currentTime');
+            const totalTimeEl = document.getElementById('totalTime');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeLevel = document.getElementById('volumeLevel');
+
+            // Reset player
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            audioElement.src = audioUrl;
+            currentAudio = audioElement;
+            isPlaying = false;
+            playButton.textContent = '▶';
+
+            // Play/Pause
+            playButton.onclick = () => {
+                if (isPlaying) {
+                    audioElement.pause();
+                    playButton.textContent = '▶';
+                } else {
+                    audioElement.play();
+                    playButton.textContent = '⏸';
+                }
+                isPlaying = !isPlaying;
+            };
+
+            // Update progress
+            audioElement.addEventListener('timeupdate', () => {
+                const progress = (audioElement.currentTime / audioElement.duration) * 100;
+                progressBar.style.width = progress + '%';
+                currentTimeEl.textContent = formatTime(audioElement.currentTime);
+            });
+
+            // Load metadata
+            audioElement.addEventListener('loadedmetadata', () => {
+                totalTimeEl.textContent = formatTime(audioElement.duration);
+            });
+
+            // Seek
+            progressContainer.onclick = (e) => {
+                const rect = progressContainer.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                audioElement.currentTime = percent * audioElement.duration;
+            };
+
+            // Volume
+            volumeSlider.onclick = (e) => {
+                const rect = volumeSlider.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                audioElement.volume = percent;
+                volumeLevel.style.width = (percent * 100) + '%';
+            };
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('mixModal');
+            const soundcloudPlayer = document.getElementById('soundcloudPlayer');
+            
+            // Stop any playing audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            
+            // Remove SoundCloud iframe
+            soundcloudPlayer.innerHTML = '';
+            
+            isPlaying = false;
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('mixModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        console.log('🎧 DJ Mixes Page loaded');
+        console.log('💡 To add your mixes:');
+        console.log('   - For internal player: Set audioUrl to your MP3 file path');
+        console.log('   - For SoundCloud: Get embed code from SoundCloud and extract the URL');
+        console.log('   - Set useInternalPlayer to true or false based on preference');
+    </script>
+</body>
+</html>
