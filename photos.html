@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photos - Music Archive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rust: #A0402B;
+            --clay: #8B3A2B;
+            --sand: #D4B896;
+            --charcoal: #1a1a1a;
+            --deep-black: #0a0a0a;
+            --cream: #E8DCC4;
+            --accent: #D94A33;
+            --dark-red: #5C1F1B;
+            --bright-red: #CC4433;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(180deg, var(--deep-black) 0%, var(--dark-red) 50%, var(--deep-black) 100%);
+            background-attachment: fixed;
+            color: var(--cream);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, var(--dark-red), var(--charcoal));
+            border-bottom: 3px solid var(--bright-red);
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.4);
+        }
+
+        .header-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            opacity: 0.8;
+            filter: contrast(1.1) saturate(1.2);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 1));
+        }
+
+        nav a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: white;
+            text-decoration: none;
+            padding: 1.2rem 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        nav a:last-child {
+            border-right: none;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--bright-red);
+            transition: width 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        nav a:hover {
+            color: white;
+            background: rgba(217, 74, 51, 0.2);
+        }
+
+        nav a:hover::before {
+            width: 100%;
+        }
+
+        nav a.active {
+            background: rgba(217, 74, 51, 0.3);
+            color: var(--sand);
+        }
+
+        nav a.active::before {
+            width: 100%;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Section styling */
+        section {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+            animation-delay: 0.1s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            letter-spacing: 4px;
+            color: white;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--bright-red), var(--accent), transparent);
+        }
+
+        /* Mosaic Gallery - CSS Grid */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, 200px);
+            gap: 2px;
+            justify-content: center;
+        }
+
+        .gallery-item {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            z-index: 10;
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(217, 74, 51, 0.8);
+        }
+
+        /* Size variations based on actual dimensions */
+        .gallery-item.square {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .gallery-item.landscape-43 {
+            /* 800x600 = 4:3 landscape */
+            grid-column: span 2;
+            grid-row: span 1.5;
+        }
+
+        .gallery-item.portrait-34 {
+            /* 600x800 = 3:4 portrait */
+            grid-column: span 1.5;
+            grid-row: span 2;
+        }
+
+        .gallery-item.wide {
+            /* 800x400 = 2:1 wide */
+            grid-column: span 2;
+            grid-row: span 1;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-item-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(10, 10, 10, 0.95), transparent);
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-item-overlay {
+            transform: translateY(0);
+        }
+
+        .gallery-item-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            color: var(--sand);
+            margin-bottom: 0.2rem;
+        }
+
+        .gallery-item-date {
+            font-size: 0.85rem;
+            color: var(--clay);
+        }
+
+        /* Modal for full-size image */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.97);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            gap: 2rem;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bright-red), var(--accent));
+            border: 2px solid var(--cream);
+            color: var(--cream);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.6);
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 30px rgba(217, 74, 51, 0.9);
+        }
+
+        .modal-image-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 70%;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            border: 3px solid var(--rust);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-info {
+            width: 350px;
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(92, 31, 27, 0.5));
+            padding: 2rem;
+            border: 3px solid var(--bright-red);
+            border-radius: 8px;
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+
+        .modal-photo-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: white;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .modal-photo-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(217, 74, 51, 0.3);
+        }
+
+        .modal-meta-item {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .modal-meta-label {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+            color: var(--sand);
+            min-width: 100px;
+        }
+
+        .modal-meta-value {
+            color: var(--cream);
+        }
+
+        .modal-photo-description {
+            color: var(--cream);
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* Navigation arrows in modal */
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bright-red), var(--accent));
+            border: 2px solid var(--cream);
+            color: var(--cream);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.6);
+        }
+
+        .modal-nav:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 30px rgba(217, 74, 51, 0.9);
+        }
+
+        .modal-nav.prev {
+            left: 2rem;
+        }
+
+        .modal-nav.next {
+            right: 2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(to bottom, var(--dark-red), var(--charcoal));
+            border-top: 3px solid var(--bright-red);
+            box-shadow: 0 -4px 20px rgba(217, 74, 51, 0.4);
+            margin-top: 5rem;
+        }
+
+        footer nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            background: linear-gradient(to top, rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 1));
+        }
+
+        .footer-logo {
+            padding: 1.2rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        .footer-logo img {
+            height: 40px;
+            width: auto;
+            filter: brightness(1.2);
+        }
+
+        footer nav a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: white;
+            text-decoration: none;
+            padding: 1.2rem 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        footer nav a:last-child {
+            border-right: none;
+        }
+
+        footer nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--bright-red);
+            transition: width 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        footer nav a:hover {
+            color: var(--sand);
+            background: rgba(217, 74, 51, 0.2);
+        }
+
+        footer nav a:hover::before {
+            width: 100%;
+        }
+
+        .footer-projects {
+            padding: 2rem 2rem 0 2rem;
+            border-top: 1px solid rgba(160, 130, 109, 0.2);
+            text-align: center;
+        }
+
+        .footer-projects-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--sand);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.3);
+        }
+
+        .footer-projects-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-project-link {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: var(--cream);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .footer-project-link:hover {
+            color: var(--sand);
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.6);
+        }
+
+        .footer-info {
+            text-align: center;
+            padding: 2rem;
+            color: var(--sand);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        .footer-info a {
+            color: var(--sand);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-info a:hover {
+            color: var(--bright-red);
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.6);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .photo-gallery {
+                grid-template-columns: repeat(auto-fit, 180px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-image {
+                height: 150px;
+            }
+
+            nav {
+                flex-wrap: wrap;
+            }
+
+            nav a {
+                font-size: 1.2rem;
+                padding: 1rem 1.5rem;
+                flex: 1 1 auto;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .photo-gallery {
+                grid-template-columns: repeat(auto-fit, 150px);
+                gap: 2px;
+            }
+
+            .modal-content {
+                flex-direction: column;
+                max-width: 95%;
+            }
+
+            .modal-image-container {
+                max-width: 100%;
+            }
+
+            .modal-info {
+                width: 100%;
+            }
+
+            .modal-nav {
+                display: none;
+            }
+
+            footer nav {
+                flex-direction: column;
+            }
+
+            .footer-logo {
+                margin-bottom: 1rem;
+            }
+
+            .footer-projects-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-project-link {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .photo-gallery {
+                grid-template-columns: repeat(auto-fit, 120px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- TO ADD YOUR HEADER IMAGE -->
+        <img src="header-placeholder.jpg" alt="Header" class="header-image">
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="dj-mixes.html">DJ Mixes</a>
+            <a href="music.html">Music</a>
+            <a href="photos.html" class="active">Photos</a>
+            <a href="#flyers">Flyers</a>
+            <a href="#press">Press</a>
+            <a href="#blog">Blog</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <section>
+            <h2 class="section-title">Photo Gallery</h2>
+            
+            <div class="photo-gallery" id="photoGallery">
+                <!-- Photos will be added here via JavaScript or manually -->
+                <!-- Each photo will auto-determine its size class based on aspect ratio -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for full-size image -->
+    <div id="photoModal" class="modal">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <button class="modal-nav prev" onclick="navigatePhoto(-1)">‹</button>
+        <button class="modal-nav next" onclick="navigatePhoto(1)">›</button>
+        
+        <div class="modal-content">
+            <div class="modal-image-container">
+                <img id="modalImage" class="modal-image" src="" alt="">
+            </div>
+            <div class="modal-info">
+                <h3 class="modal-photo-title" id="modalTitle"></h3>
+                <div class="modal-photo-meta">
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Date</span>
+                        <span class="modal-meta-value" id="modalDate"></span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Location</span>
+                        <span class="modal-meta-value" id="modalLocation"></span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Photographer</span>
+                        <span class="modal-meta-value" id="modalPhotographer"></span>
+                    </div>
+                </div>
+                <p class="modal-photo-description" id="modalDescription"></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <nav>
+            <div class="footer-logo">
+                <img src="data:image/svg+xml,%3Csvg width='120' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='30' font-family='Bebas Neue, sans-serif' font-size='28' fill='%23E8DCC4' letter-spacing='2'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Logo">
+            </div>
+            <a href="dj-mixes.html">DJ Mixes</a>
+            <a href="music.html">Music</a>
+            <a href="photos.html">Photos</a>
+            <a href="#flyers">Flyers</a>
+            <a href="#press">Press</a>
+            <a href="#blog">Blog</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <div class="footer-projects">
+            <div class="footer-projects-title">Other Projects</div>
+            <div class="footer-projects-links">
+                <a href="#" class="footer-project-link" target="_blank">PPLPRSN</a>
+                <a href="#" class="footer-project-link" target="_blank">Sobo</a>
+                <a href="#" class="footer-project-link" target="_blank">Deemster</a>
+            </div>
+        </div>
+        <div class="footer-info">
+            <p>&copy; 2026 Music Archive. All rights reserved. | <a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Photo data array with size specifications
+        const photos = [
+            {
+                src: "photos/photo1.jpg", // Replace with actual image paths
+                size: "square", // Options: square, landscape-43, portrait-34, wide
+                title: "Warehouse Sessions Opening Night",
+                date: "December 15, 2024",
+                location: "The Warehouse, Downtown",
+                photographer: "Alex Chen",
+                description: "The energy was electric as we opened the doors for the first warehouse session. Hundreds of people packed the space, creating an atmosphere that was pure magic. This moment captured the anticipation just before the first drop."
+            },
+            {
+                src: "photos/photo2.jpg",
+                size: "landscape-43",
+                title: "Crowd Energy",
+                date: "December 15, 2024",
+                location: "The Warehouse, Downtown",
+                photographer: "Sam Rodriguez",
+                description: "When the bass hits just right and the entire crowd moves as one. These are the moments we live for."
+            },
+            {
+                src: "photos/photo3.jpg",
+                size: "portrait-34",
+                title: "DJ in the Zone",
+                date: "November 22, 2024",
+                location: "Club Nocturne",
+                photographer: "Jordan Lee",
+                description: "Lost in the mix, riding the energy of the room. The connection between DJ and crowd becomes transcendent."
+            },
+            {
+                src: "photos/photo4.jpg",
+                size: "wide",
+                title: "Light Show",
+                date: "November 22, 2024",
+                location: "Club Nocturne",
+                photographer: "Taylor Kim",
+                description: "Our lighting designer outdid themselves this night. The interplay of light and shadow added another dimension to the sonic experience."
+            },
+            {
+                src: "photos/photo5.jpg",
+                size: "square",
+                title: "Sunrise Set",
+                date: "October 8, 2024",
+                location: "Rooftop Sessions",
+                photographer: "Casey Morgan",
+                description: "As the sun rose over the city, the music took on a different quality. Peaceful yet energetic, this sunrise set became legendary."
+            },
+            {
+                src: "photos/photo6.jpg",
+                size: "landscape-43",
+                title: "Dance Floor Magic",
+                date: "October 8, 2024",
+                location: "Rooftop Sessions",
+                photographer: "Riley Park",
+                description: "The dance floor transformed into a space of pure expression. Every person adding their own energy to the collective experience."
+            },
+            {
+                src: "photos/photo7.jpg",
+                size: "portrait-34",
+                title: "Behind the Scenes",
+                date: "September 30, 2024",
+                location: "Studio",
+                photographer: "Drew Wilson",
+                description: "The work that happens before the party begins. Setting up, sound checking, getting every detail perfect."
+            },
+            {
+                src: "photos/photo8.jpg",
+                size: "wide",
+                title: "The Booth",
+                date: "September 30, 2024",
+                location: "Studio",
+                photographer: "Quinn Taylor",
+                description: "Command center. Where the magic happens and the night is orchestrated."
+            },
+            {
+                src: "photos/photo9.jpg",
+                size: "square",
+                title: "Laser Lights",
+                date: "August 12, 2024",
+                location: "Festival Grounds",
+                photographer: "Morgan Lee",
+                description: "When technology and artistry merge. The laser show became its own living entity."
+            },
+            {
+                src: "photos/photo10.jpg",
+                size: "landscape-43",
+                title: "Festival Crowd",
+                date: "August 12, 2024",
+                location: "Festival Grounds",
+                photographer: "Jordan Smith",
+                description: "Thousands gathered under the summer sky. The collective energy was overwhelming."
+            }
+            // Add more photos as needed
+        ];
+
+        let currentPhotoIndex = 0;
+
+        // Load photos into gallery
+        function loadGallery() {
+            const gallery = document.getElementById('photoGallery');
+            
+            for (let i = 0; i < photos.length; i++) {
+                const photo = photos[i];
+                
+                // Create gallery item
+                const item = document.createElement('div');
+                item.className = `gallery-item ${photo.size}`;
+                item.onclick = () => openPhoto(i);
+                
+                // Create image
+                const img = document.createElement('img');
+                img.src = photo.src;
+                img.alt = photo.title;
+                img.onerror = function() {
+                    // If image fails to load, use placeholder with appropriate dimensions
+                    const dimensions = {
+                        'square': '800x800',
+                        'landscape-43': '800x600',
+                        'portrait-34': '600x800',
+                        'wide': '800x400'
+                    };
+                    const dim = dimensions[photo.size] || '800x600';
+                    const [w, h] = dim.split('x');
+                    this.src = `data:image/svg+xml,%3Csvg width='${w}' height='${h}' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='%23A0402B'/%3E%3Ctext x='50%25' y='50%25' font-family='Bebas Neue, sans-serif' font-size='24' fill='%23E8DCC4' text-anchor='middle' dominant-baseline='middle'%3E${photo.title}%3C/text%3E%3C/svg%3E`;
+                };
+                
+                // Create overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'gallery-item-overlay';
+                overlay.innerHTML = `
+                    <div class="gallery-item-title">${photo.title}</div>
+                    <div class="gallery-item-date">${photo.date}</div>
+                `;
+                
+                item.appendChild(img);
+                item.appendChild(overlay);
+                gallery.appendChild(item);
+            }
+        }
+
+        // Open photo in modal
+        function openPhoto(index) {
+            currentPhotoIndex = index;
+            const photo = photos[index];
+            const modal = document.getElementById('photoModal');
+            
+            document.getElementById('modalImage').src = photo.src;
+            document.getElementById('modalTitle').textContent = photo.title;
+            document.getElementById('modalDate').textContent = photo.date;
+            document.getElementById('modalLocation').textContent = photo.location;
+            document.getElementById('modalPhotographer').textContent = photo.photographer;
+            document.getElementById('modalDescription').textContent = photo.description;
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Navigate between photos in modal
+        function navigatePhoto(direction) {
+            currentPhotoIndex += direction;
+            
+            // Loop around
+            if (currentPhotoIndex < 0) {
+                currentPhotoIndex = photos.length - 1;
+            } else if (currentPhotoIndex >= photos.length) {
+                currentPhotoIndex = 0;
+            }
+            
+            openPhoto(currentPhotoIndex);
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('photoModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('photoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            } else if (e.key === 'ArrowLeft') {
+                navigatePhoto(-1);
+            } else if (e.key === 'ArrowRight') {
+                navigatePhoto(1);
+            }
+        });
+
+        // Load gallery on page load
+        loadGallery();
+
+        console.log('📷 Photo Gallery loaded');
+        console.log('💡 To add your photos:');
+        console.log('   1. Add image files to a "photos" folder');
+        console.log('   2. Update the photos array with your image data');
+        console.log('   3. Specify size for each: square, landscape-43, portrait-34, or wide');
+        console.log('   Size guide:');
+        console.log('     - square: 800x800 or similar 1:1 ratio');
+        console.log('     - landscape-43: 800x600 or 4:3 ratio');
+        console.log('     - portrait-34: 600x800 or 3:4 ratio');
+        console.log('     - wide: 800x400 or 2:1 ratio');
+    </script>
+</body>
+</html>
