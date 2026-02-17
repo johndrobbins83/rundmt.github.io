@@ -975,13 +975,27 @@
             },
             // Add more albums with their specific Spotify URIs and links...
         ];
-
+// Load album covers on page load
+window.addEventListener('DOMContentLoaded', function() {
+    // Update album covers in the grid
+    const albumItems = document.querySelectorAll('.album-item');
+    albumItems.forEach((item, index) => {
+        if (albums[index] && albums[index].coverArt) {
+            const coverDiv = item.querySelector('.album-cover');
+            const img = document.createElement('img');
+            img.src = albums[index].coverArt;
+            img.alt = albums[index].title;
+            coverDiv.appendChild(img);
+        }
+    });
+});
         function openAlbum(index) {
             const modal = document.getElementById('albumModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalArtist = document.getElementById('modalArtist');
             const modalDescription = document.getElementById('modalDescription');
             const modalTracks = document.getElementById('modalTracks');
+            const modalCover = document.getElementById('modalCover');
             const spotifyPlayer = document.getElementById('spotifyPlayer');
             const spotifyLink = document.getElementById('spotifyLink');
             const appleMusicLink = document.getElementById('appleMusicLink');
@@ -1010,6 +1024,14 @@
             modalTitle.textContent = album.title;
             modalArtist.textContent = album.artist + " • " + album.year;
             modalDescription.textContent = album.description;
+            // Set modal cover art
+modalCover.innerHTML = '';
+if (album.coverArt) {
+    const coverImg = document.createElement('img');
+    coverImg.src = album.coverArt;
+    coverImg.alt = album.title;
+    modalCover.appendChild(coverImg);
+}
 
             // Set up Spotify Player
             // Convert Spotify URI to embed URL
