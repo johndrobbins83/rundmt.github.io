@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music - Music Archive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rust: #A0402B;
+            --clay: #8B3A2B;
+            --sand: #D4B896;
+            --charcoal: #1a1a1a;
+            --deep-black: #0a0a0a;
+            --cream: #E8DCC4;
+            --accent: #D94A33;
+            --dark-red: #5C1F1B;
+            --bright-red: #CC4433;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(180deg, var(--deep-black) 0%, var(--dark-red) 50%, var(--deep-black) 100%);
+            background-attachment: fixed;
+            color: var(--cream);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, var(--dark-red), var(--charcoal));
+            border-bottom: 3px solid var(--bright-red);
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.4);
+        }
+
+        .header-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            opacity: 0.8;
+            filter: contrast(1.1) saturate(1.2);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 1));
+        }
+
+        nav a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: white;
+            text-decoration: none;
+            padding: 1.2rem 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        nav a:last-child {
+            border-right: none;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--bright-red);
+            transition: width 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        nav a:hover {
+            color: white;
+            background: rgba(217, 74, 51, 0.2);
+        }
+
+        nav a:hover::before {
+            width: 100%;
+        }
+
+        nav a.active {
+            background: rgba(217, 74, 51, 0.3);
+            color: var(--sand);
+        }
+
+        nav a.active::before {
+            width: 100%;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Section styling */
+        section {
+            margin-bottom: 5rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        section:nth-child(1) { animation-delay: 0.1s; }
+        section:nth-child(2) { animation-delay: 0.2s; }
+        section:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            letter-spacing: 4px;
+            color: white;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--bright-red), var(--accent), transparent);
+        }
+
+        /* Album Grid */
+        .albums-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .album-item {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .album-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--dark-red), var(--bright-red), var(--rust));
+            border: 3px solid var(--rust);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s ease;
+        }
+
+        .album-cover::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--bright-red) 25%, transparent 25%, transparent 75%, var(--bright-red) 75%),
+                        linear-gradient(45deg, var(--bright-red) 25%, transparent 25%, transparent 75%, var(--bright-red) 75%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            opacity: 0.15;
+        }
+
+        .album-cover::after {
+            content: '♪';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            color: rgba(232, 220, 196, 0.2);
+        }
+
+        .album-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 1;
+        }
+
+        .album-item:hover .album-cover {
+            transform: translateY(-10px);
+            border-color: var(--bright-red);
+            box-shadow: 0 12px 35px rgba(217, 74, 51, 0.6);
+        }
+
+        .album-info {
+            text-align: center;
+        }
+
+        .album-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: white;
+            margin-bottom: 0.3rem;
+        }
+
+        .album-artist {
+            color: var(--sand);
+            font-style: italic;
+            font-size: 1rem;
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.3);
+        }
+
+        .album-year {
+            color: var(--clay);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        /* Modal for album details */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(92, 31, 27, 0.5));
+            border: 3px solid var(--bright-red);
+            border-radius: 8px;
+            max-width: 1400px;
+            width: 95%;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(217, 74, 51, 0.6);
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 2rem;
+            padding: 2rem;
+            min-height: 0;
+        }
+
+        .modal-left-column {
+            flex: 0 0 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .modal-description-box {
+            padding: 1.5rem;
+            background: rgba(10, 10, 10, 0.6);
+            border: 2px solid var(--rust);
+            border-radius: 8px;
+        }
+
+        .modal-title-left {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-artist-left {
+            color: var(--sand);
+            font-size: 1rem;
+            font-style: italic;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.3);
+        }
+
+        .modal-description-left {
+            color: var(--cream);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .modal-links {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .streaming-link {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(217, 74, 51, 0.2), rgba(160, 64, 43, 0.3));
+            border: 2px solid var(--rust);
+            color: var(--cream);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .streaming-link:hover {
+            background: linear-gradient(135deg, rgba(217, 74, 51, 0.4), rgba(160, 64, 43, 0.5));
+            border-color: var(--bright-red);
+            color: white;
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.6);
+            transform: translateY(-2px) scale(1.1);
+        }
+
+        .streaming-link svg {
+            width: 30px;
+            height: 30px;
+            fill: currentColor;
+        }
+        
+        .streaming-link span {
+            display: none;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bright-red), var(--accent));
+            border: 2px solid var(--cream);
+            color: var(--cream);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            box-shadow: 0 4px 20px rgba(217, 74, 51, 0.6);
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 30px rgba(217, 74, 51, 0.9);
+        }
+
+        .modal-album-cover {
+            width: 350px;
+            height: 350px;
+            background: linear-gradient(135deg, var(--dark-red), var(--bright-red));
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--rust);
+            box-shadow: 0 8px 25px rgba(217, 74, 51, 0.4);
+        }
+
+        .modal-album-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-album-cover::before {
+            content: '♪';
+            position: absolute;
+            font-size: 8rem;
+            color: rgba(232, 220, 196, 0.2);
+        }
+
+        .modal-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .modal-header-info {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-artist {
+            color: var(--sand);
+            font-size: 1.2rem;
+            font-style: italic;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.4);
+        }
+
+        .modal-description {
+            color: var(--cream);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Spotify Player */
+        .spotify-player {
+            border: 2px solid var(--rust);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(217, 74, 51, 0.3);
+            flex: 1;
+            min-height: 0;
+        }
+
+        .spotify-player iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .modal-tracklist {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(217, 74, 51, 0.3);
+        }
+
+        .modal-tracklist-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            color: var(--sand);
+            margin-bottom: 1rem;
+        }
+
+        .track {
+            display: flex;
+            padding: 0.5rem 0;
+            color: var(--cream);
+            border-bottom: 1px solid rgba(160, 130, 109, 0.1);
+        }
+
+        .track-number {
+            color: var(--clay);
+            margin-right: 1rem;
+            min-width: 30px;
+        }
+
+        .track-name {
+            flex: 1;
+        }
+
+        .track-duration {
+            color: var(--sand);
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .modal-links {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid rgba(217, 74, 51, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(to bottom, var(--dark-red), var(--charcoal));
+            border-top: 3px solid var(--bright-red);
+            box-shadow: 0 -4px 20px rgba(217, 74, 51, 0.4);
+            margin-top: 5rem;
+        }
+
+        footer nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            background: linear-gradient(to top, rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 1));
+        }
+
+        .footer-logo {
+            padding: 1.2rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        .footer-logo img {
+            height: 40px;
+            width: auto;
+            filter: brightness(1.2);
+        }
+
+        footer nav a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: white;
+            text-decoration: none;
+            padding: 1.2rem 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        footer nav a:last-child {
+            border-right: none;
+        }
+
+        footer nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--bright-red);
+            transition: width 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        footer nav a:hover {
+            color: var(--sand);
+            background: rgba(217, 74, 51, 0.2);
+        }
+
+        footer nav a:hover::before {
+            width: 100%;
+        }
+
+        .footer-projects {
+            padding: 2rem 2rem 0 2rem;
+            border-top: 1px solid rgba(160, 130, 109, 0.2);
+            text-align: center;
+        }
+
+        .footer-projects-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--sand);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.3);
+        }
+
+        .footer-projects-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-project-link {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: var(--cream);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .footer-project-link:hover {
+            color: var(--sand);
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.6);
+        }
+
+        .footer-info {
+            text-align: center;
+            padding: 2rem;
+            color: var(--sand);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(160, 130, 109, 0.2);
+        }
+
+        .footer-info a {
+            color: var(--sand);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-info a:hover {
+            color: var(--bright-red);
+            text-shadow: 0 0 8px rgba(212, 184, 150, 0.6);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-image {
+                height: 150px;
+            }
+
+            nav {
+                flex-wrap: wrap;
+            }
+
+            nav a {
+                font-size: 1.2rem;
+                padding: 1rem 1.5rem;
+                flex: 1 1 auto;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .albums-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .modal-content {
+                flex-direction: column;
+                max-width: 95%;
+                max-height: 95vh;
+            }
+
+            .modal-body {
+                flex-direction: column;
+            }
+
+            .modal-album-cover {
+                flex: 0 0 auto;
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1;
+            }
+
+            .modal-info {
+                padding: 1.5rem;
+            }
+
+            .spotify-player iframe {
+                height: 280px;
+            }
+
+            footer nav {
+                flex-direction: column;
+            }
+
+            .footer-logo {
+                margin-bottom: 1rem;
+            }
+
+            .footer-projects-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-project-link {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- TO ADD YOUR HEADER IMAGE:
+             1. Save your image in the same folder as this HTML file (or in an 'images' folder)
+             2. Replace 'header-placeholder.jpg' below with your actual filename
+             3. Example: <img src="header.jpg" alt="Header" class="header-image">
+             4. Or with folder: <img src="images/header.jpg" alt="Header" class="header-image">
+        -->
+        <img src="header-placeholder.jpg" alt="Header" class="header-image">
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="#dj-mixes">DJ Mixes</a>
+            <a href="music.html" class="active">Music</a>
+            <a href="#photos">Photos</a>
+            <a href="#flyers">Flyers</a>
+            <a href="#press">Press</a>
+            <a href="#blog">Blog</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Albums Section -->
+        <section>
+            <h2 class="section-title">Albums</h2>
+            <div class="albums-grid" id="albumsGrid">
+                <!-- Album items will be dynamically added here -->
+                <div class="album-item" onclick="openAlbum(0)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Midnight Sessions</div>
+                        <div class="album-artist">Various Artists</div>
+                        <div class="album-year">2024</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(1)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Underground Frequencies</div>
+                        <div class="album-artist">DJ Collective</div>
+                        <div class="album-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(2)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Dark Matter</div>
+                        <div class="album-artist">Deep Sound Project</div>
+                        <div class="album-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(3)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Neon Nights</div>
+                        <div class="album-artist">Electronic Dreams</div>
+                        <div class="album-year">2022</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(4)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Warehouse Tales</div>
+                        <div class="album-artist">The Movement</div>
+                        <div class="album-year">2022</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EPs and Singles Section -->
+        <section>
+            <h2 class="section-title">EPs and Singles</h2>
+            <div class="albums-grid" id="epsGrid">
+                <div class="album-item" onclick="openAlbum(5)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Late Night Drive EP</div>
+                        <div class="album-artist">Night Rider</div>
+                        <div class="album-year">2024</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(6)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Bassline Theory</div>
+                        <div class="album-artist">Low End Theory</div>
+                        <div class="album-year">2024</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(7)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Dawn Breaks</div>
+                        <div class="album-artist">Morning Light</div>
+                        <div class="album-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(8)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Rhythm & Soul EP</div>
+                        <div class="album-artist">Groove Masters</div>
+                        <div class="album-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(9)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">City Lights</div>
+                        <div class="album-artist">Urban Soundscape</div>
+                        <div class="album-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(10)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Frequency Shift</div>
+                        <div class="album-artist">Wave Function</div>
+                        <div class="album-year">2022</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Remixes Section -->
+        <section>
+            <h2 class="section-title">Remixes</h2>
+            <div class="albums-grid" id="remixesGrid">
+                <div class="album-item" onclick="openAlbum(11)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Echoes (Remix)</div>
+                        <div class="album-artist">Sound Architects</div>
+                        <div class="album-year">2024</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(12)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Pulse Remixed</div>
+                        <div class="album-artist">Beat Collective</div>
+                        <div class="album-year">2024</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(13)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Twilight (Rework)</div>
+                        <div class="album-artist">Dusk Productions</div>
+                        <div class="album-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(14)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Infinity Loop Remix</div>
+                        <div class="album-artist">Spiral Sound</div>
+                        <div class="album-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(15)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Velocity (VIP Mix)</div>
+                        <div class="album-artist">Speed Demons</div>
+                        <div class="album-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="album-item" onclick="openAlbum(16)">
+                    <div class="album-cover"></div>
+                    <div class="album-info">
+                        <div class="album-title">Storm Remix Pack</div>
+                        <div class="album-artist">Weather Systems</div>
+                        <div class="album-year">2022</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Album Details -->
+    <!-- Modal for Album Details -->
+    <div id="albumModal" class="modal">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="modal-left-column">
+                    <div class="modal-album-cover" id="modalCover"></div>
+                    
+                    <div class="modal-description-box">
+                        <h3 class="modal-title-left" id="modalTitleLeft">Album Title</h3>
+                        <p class="modal-artist-left" id="modalArtistLeft">Artist Name</p>
+                        <p class="modal-description-left" id="modalDescriptionLeft">Album description goes here...</p>
+                    </div>
+                </div>
+
+                <div class="modal-info">
+                    <!-- Spotify Player with full tracklist -->
+                    <div class="spotify-player" id="spotifyPlayer">
+                        <!-- Spotify embed iframe will be inserted here -->
+                    </div>
+                    
+                    <div class="modal-links">
+                        <a href="#" id="spotifyLink" class="streaming-link" target="_blank">
+                            <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                            <span>Spotify</span>
+                        </a>
+                        <a href="#" id="appleMusicLink" class="streaming-link" target="_blank">
+                            <svg viewBox="0 0 24 24"><path d="M23.997 6.124c0-.738-.065-1.47-.24-2.19-.317-1.31-1.062-2.31-2.18-3.043a5.1 5.1 0 0 0-1.877-.726 11.4 11.4 0 0 0-1.847-.137c-.13-.01-5.049-.006-5.179.005a11.3 11.3 0 0 0-1.847.137 5.1 5.1 0 0 0-1.877.726c-1.118.732-1.863 1.732-2.18 3.043a11.6 11.6 0 0 0-.24 2.19c-.01.13-.007 5.05.005 5.18.012.734.064 1.466.24 2.19.317 1.31 1.062 2.31 2.18 3.043a5.1 5.1 0 0 0 1.877.726c.6.136 1.216.194 1.847.137.13.01 5.049.006 5.179-.005a11.3 11.3 0 0 0 1.847-.137 5.1 5.1 0 0 0 1.877-.726c1.118-.732 1.863-1.732 2.18-3.043.176-.724.228-1.456.24-2.19.012-.13.006-5.05-.005-5.18zM11.5 6.124v9.097c0 .816-.111 1.501-.333 2.053-.222.551-.583 1.015-1.084 1.391-.5.376-1.195.564-2.084.564-.917 0-1.667-.215-2.25-.645s-.875-1.015-.875-1.755c0-.681.208-1.214.625-1.598s.958-.576 1.625-.576c.5 0 .958.111 1.375.333v-5.264c0-.431.111-.681.333-.75l6.417-1.042c.417-.083.667.111.667.583v5.611c0 .764-.111 1.403-.333 1.917s-.583.932-1.084 1.266-1.195.5-2.084.5c-.917 0-1.667-.181-2.25-.542s-.875-.889-.875-1.598c0-.681.208-1.181.625-1.5s.958-.479 1.625-.479c.5 0 .958.083 1.375.25z"/></svg>
+                            <span>Apple Music</span>
+                        </a>
+                        <a href="#" id="bandcampLink" class="streaming-link" target="_blank">
+                            <svg viewBox="0 0 24 24"><path d="M0 9.6h7.2L10.8 14.4H18L14.4 9.6H24L20.4 14.4h-7.2L9.6 9.6H0z"/></svg>
+                            <span>Bandcamp</span>
+                        </a>
+                        <a href="#" id="amazonMusicLink" class="streaming-link" target="_blank">
+                            <svg viewBox="0 0 24 24"><path d="M4.365 16.615c-2.176.905-4.32 1.268-6.035.88-.618-.14-.947-.548-.82-1.02.127-.473.618-.742 1.236-.602 1.473.333 3.364.037 5.256-.806 1.87-.843 3.42-2.196 4.25-3.81.128-.252.432-.364.683-.252.252.126.363.431.252.682-.958 1.865-2.63 3.42-4.822 4.43zm13.73-7.617c.758-.63 1.642-.948 2.648-.948.883 0 1.61.263 2.18.79.57.525.855 1.23.855 2.113v5.86c0 .336-.273.61-.61.61s-.61-.274-.61-.61v-1.135c-.542.79-1.452 1.375-2.712 1.375-1.515 0-2.743-.948-2.743-2.333 0-1.513 1.228-2.27 2.743-2.27.948 0 1.715.244 2.322.672v-.948c0-.505-.19-.948-.506-1.26-.315-.315-.758-.473-1.325-.473-.694 0-1.23.223-1.7.662-.22.205-.564.193-.768-.027-.205-.22-.193-.564.027-.768zm1.61 6.25c.947 0 1.767-.584 2.038-1.4.016-.048.024-.1.024-.15v-.648c-.506-.347-1.164-.568-1.915-.568-.948 0-1.642.473-1.642 1.194 0 .695.695 1.194 1.495 1.194z"/></svg>
+                            <span>Amazon Music</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <nav>
+            <div class="footer-logo">
+                <img src="data:image/svg+xml,%3Csvg width='120' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='30' font-family='Bebas Neue, sans-serif' font-size='28' fill='%23E8DCC4' letter-spacing='2'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Logo">
+            </div>
+            <a href="#dj-mixes">DJ Mixes</a>
+            <a href="music.html">Music</a>
+            <a href="#photos">Photos</a>
+            <a href="#flyers">Flyers</a>
+            <a href="#press">Press</a>
+            <a href="#blog">Blog</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <div class="footer-projects">
+            <div class="footer-projects-title">Other Projects</div>
+            <div class="footer-projects-links">
+                <a href="#" class="footer-project-link" target="_blank">PPLPRSN</a>
+                <a href="#" class="footer-project-link" target="_blank">Sobo</a>
+                <a href="#" class="footer-project-link" target="_blank">Deemster</a>
+            </div>
+        </div>
+        <div class="footer-info">
+            <p>&copy; 2026 Music Archive. All rights reserved. | <a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Sample album data with Spotify URIs and streaming links
+        // Sample album data with Spotify URIs and streaming links
+        const albums = [
+            {
+                title: "Revolutionaire",
+                artist: "RUN DMT",
+                coverArt: "https://www.johnthepm.com/run-dmt/Images/Albums/ab67616d0000b2736142226f9868bad75d3018ca.jpg",
+                year: "2017",
+                description: "Third Full Length Album",
+                spotifyUri: "spotify:album:5M23pBO4h2nSenNmKCBgep",
+                bandcampUrl: "https://therundmt.bandcamp.com/album/revolutionaire",
+                appleMusicUrl: "https://music.apple.com/us/album/revolutionaire/1268411011",
+                amazonMusicUrl: "https://www.amazon.com/Revolutionaire-Explicit-Run-DMT/dp/B074KZRQLV",
+                tracks: []
+            }
+            // Add more albums with their specific Spotify URIs and links...
+        ];
+
+        // Load album covers on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Page loaded, albums array:', albums.length);
+            
+            // Update album covers in the grid
+            const albumItems = document.querySelectorAll('.album-item');
+            console.log('📀 Found album items:', albumItems.length);
+            
+            albumItems.forEach((item, index) => {
+                if (albums[index] && albums[index].coverArt) {
+                    const coverDiv = item.querySelector('.album-cover');
+                    const img = document.createElement('img');
+                    img.src = albums[index].coverArt;
+                    img.alt = albums[index].title;
+                    coverDiv.appendChild(img);
+                    console.log('🖼️ Loaded cover for:', albums[index].title);
+                }
+            });
+        });
+
+        function openAlbum(index) {
+            const modal = document.getElementById('albumModal');
+            const modalTitleLeft = document.getElementById('modalTitleLeft');
+            const modalArtistLeft = document.getElementById('modalArtistLeft');
+            const modalDescriptionLeft = document.getElementById('modalDescriptionLeft');
+            const modalCover = document.getElementById('modalCover');
+            const spotifyPlayer = document.getElementById('spotifyPlayer');
+            const spotifyLink = document.getElementById('spotifyLink');
+            const appleMusicLink = document.getElementById('appleMusicLink');
+            const bandcampLink = document.getElementById('bandcampLink');
+            const amazonMusicLink = document.getElementById('amazonMusicLink');
+
+            // Use sample data or default
+            const album = albums[index] || {
+                title: "Album Title",
+                artist: "Artist Name",
+                coverArt: "",
+                year: "2024",
+                description: "An incredible collection of tracks that showcase the evolution of underground electronic music. Each song tells a story of late nights, packed dance floors, and the unifying power of rhythm.",
+                spotifyUri: "spotify:album:3KyVcddATClQKIdtaap4bV",
+                bandcampUrl: "#",
+                appleMusicUrl: "#",
+                amazonMusicUrl: "#",
+                tracks: []
+            };
+
+            // Update left column content
+            modalTitleLeft.textContent = album.title;
+            modalArtistLeft.textContent = album.artist + " • " + album.year;
+            modalDescriptionLeft.textContent = album.description;
+
+            // Set modal cover art
+            modalCover.innerHTML = '';
+            if (album.coverArt) {
+                const coverImg = document.createElement('img');
+                coverImg.src = album.coverArt;
+                coverImg.alt = album.title;
+                modalCover.appendChild(coverImg);
+            }
+
+            // Set up Spotify Player
+            const spotifyId = album.spotifyUri.split(':')[2];
+            const spotifyEmbedUrl = `https://open.spotify.com/embed/album/${spotifyId}?utm_source=generator&theme=0`;
+            
+            console.log('🎵 Opening album:', album.title);
+            console.log('📀 Spotify ID:', spotifyId);
+            
+            const iframeHeight = Math.floor(window.innerHeight * 0.95) - 200;
+            spotifyPlayer.innerHTML = `
+                <iframe 
+                    src="${spotifyEmbedUrl}" 
+                    width="100%" 
+                    height="${iframeHeight}" 
+                    frameBorder="0" 
+                    allowfullscreen="" 
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                    loading="lazy">
+                </iframe>
+            `;
+
+            // Update streaming links
+            const spotifyUrl = `https://open.spotify.com/album/${spotifyId}`;
+            spotifyLink.href = spotifyUrl;
+            appleMusicLink.href = album.appleMusicUrl;
+            bandcampLink.href = album.bandcampUrl;
+            amazonMusicLink.href = album.amazonMusicUrl;
+
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('albumModal');
+            const spotifyPlayer = document.getElementById('spotifyPlayer');
+            
+            // Stop Spotify playback by removing the iframe
+            spotifyPlayer.innerHTML = '';
+            
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('albumModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        console.log('🎵 Music Archive - Music Page loaded');
+        console.log('💡 To add your albums:');
+        console.log('   1. Get your Spotify album URI (right-click album > Share > Copy Spotify URI)');
+        console.log('   2. Add album data to the albums array with all streaming links');
+        console.log('   3. Replace placeholder album covers with actual artwork');
+    </script>
+</body>
+</html>
